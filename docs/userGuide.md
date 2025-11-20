@@ -1,16 +1,5 @@
 # User Guide
 
-For a full walkthrough video, please refer to the [Demo Video](https://www.youtube.com/watch?v=HIg1x8q3VXY) link.
-
----
-
-## Essentials
-
-- Solution must be deployed (`docs/deploymentGuide.md`).
-- Salesforce, Twilio, and AWS credentials should already be in place.
-
----
-
 ## Student Flow 
 
 1. **Explore the site** – Students land on the admissions page, see program highlights, and can open the Nemo chat at any time.
