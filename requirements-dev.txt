@@ -1,0 +1,36 @@
+# Development and Testing Dependencies
+# Install with: pip install -r requirements-dev.txt
+
+# Testing Framework
+pytest==8.0.0
+pytest-mock==3.12.0
+
+# Property-Based Testing
+hypothesis==6.92.0
+
+# Mocking and Testing Utilities
+boto3==1.34.0  # For mocking AWS services
+moto==5.0.0    # AWS service mocking library
+
+# Code Quality
+black==24.1.0  # Code formatter
+flake8==7.0.0  # Linter
+mypy==1.8.0    # Type checker
+
+# Lambda Layer Dependencies (for local testing)
+simple-salesforce==1.12.4  # Salesforce API
+requests==2.31.0           # HTTP library
+twilio==8.11.0             # Twilio API
+
+# AWS SDKs
+boto3==1.34.0
+botocore==1.34.0
+
+# Strands Agent SDK (for AgentCore testing)
+# Note: Install separately if testing AgentCore
+# strands>=0.1.0
+
+# Additional Testing Utilities
+coverage==7.4.0   # Code coverage
+pytest-cov==4.1.0 # pytest coverage plugin
+# pytest-asyncio==0.24.0  # Commented out - not compatible with Python 3.14 yet (see PYTHON_314_NOTES.md)

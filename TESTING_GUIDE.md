@@ -19,6 +19,17 @@ This guide provides a comprehensive testing strategy for the AI Admissions Agent
 
 ## Local Testing
 
+### Prerequisites
+
+Before running any tests, optionally install all development dependencies at once:
+
+```bash
+# (Optional) Install all development dependencies from root
+pip install -r requirements-dev.txt
+```
+
+This will install all testing frameworks, mocking libraries, and code quality tools in one go. Alternatively, you can install dependencies individually for each Lambda function as shown below.
+
 ### Phase 1: Lambda Function Unit Tests
 
 #### 1.1 Form Submission Lambda
@@ -27,14 +38,14 @@ This guide provides a comprehensive testing strategy for the AI Admissions Agent
 cd Backend/admissions-ai-agent/lambda/form-submission
 
 # Install dependencies
+# Note: requirements.txt includes both runtime and test dependencies
 pip install -r requirements.txt
-pip install -r requirements-dev.txt
 
 # Run all tests
-python -m pytest test_form_submission.py -v
+python -m pytest tests/test_form_submission.py -v
 
 # Run with coverage
-python -m pytest test_form_submission.py --cov=form_submission --cov-report=html
+python -m pytest tests/test_form_submission.py --cov=form_submission --cov-report=html
 
 # Expected result: 18/20 tests passing (90%)
 ```
@@ -48,11 +59,11 @@ python -m pytest test_form_submission.py --cov=form_submission --cov-report=html
 cd Backend/admissions-ai-agent/lambda/whatsapp-sender
 
 # Install dependencies
+# Note: requirements.txt includes both runtime and test dependencies
 pip install -r requirements.txt
-pip install -r requirements-dev.txt
 
 # Run all tests
-python -m pytest test_send_whatsapp_twilio.py -v
+python -m pytest tests/test_whatsapp_sender.py -v
 
 # Expected result: 10/11 tests passing (91%)
 ```

@@ -10,6 +10,161 @@ This is a Next.js 15 application providing a modern landing page with inquiry fo
 **Styling**: Tailwind CSS 4
 **Component Library**: Radix UI
 
+---
+
+## Brand Design System
+
+### Brand Colors
+
+#### Primary Brand Red
+- **Hex**: `#9B4444`
+- **Usage**:
+  - Primary action buttons (Submit, etc.)
+  - Focus rings on form inputs
+  - Important text highlights (e.g., "INFORMATION" in headers)
+  - Hyperlinks (e.g., privacy policy links)
+  - Checkbox accent colors
+- **Hover State**: `#7d3636` (darker shade for buttons)
+
+### Layout & Background
+
+#### Page Background
+- **Color**: `bg-gray-100` (neutral light gray, no blue tint)
+- **Usage**: Main page background for clean, professional look
+
+#### Content Cards
+- **Background**: `bg-white`
+- **Shadow**: `shadow-lg` for depth
+- **Border Radius**: `rounded-lg`
+- **Padding**: `p-8` for main content areas
+
+### Typography
+
+#### Headers
+- **Main Headers**:
+  - Size: `text-3xl`
+  - Weight: `font-bold`
+  - Alignment: `text-center`
+  - Color: Mix of `text-gray-900` and `text-[#9B4444]` for emphasis
+
+#### Body Text
+- **Primary**: `text-gray-700` for labels and body text
+- **Secondary**: `text-gray-600` for subtitles and descriptions
+- **Muted**: `text-gray-500` for optional field indicators
+
+### Form Elements
+
+#### Input Fields
+- **Base Styling**:
+  ```
+  w-full px-4 py-2 border border-gray-300 rounded-lg
+  ```
+- **Focus State**:
+  ```
+  focus:ring-2 focus:ring-[#9B4444] focus:border-transparent
+  ```
+- **Text Colors**:
+  - Input text: `text-gray-900`
+  - Placeholder: `placeholder:text-gray-400`
+
+#### Select Dropdowns
+- **Placeholder Styling**: Use conditional classes
+  ```typescript
+  className={`base-classes ${formData.field ? 'text-gray-900' : 'text-gray-400'}`}
+  ```
+- **Placeholder Options**: Must be `disabled` and `hidden`
+  ```tsx
+  <option value="" disabled hidden>Select...</option>
+  ```
+- **Real Options**: `className="text-gray-900"`
+
+#### Checkboxes
+- **Size**: `h-4 w-4`
+- **Accent Color**: `text-[#9B4444]`
+- **Focus Ring**: `focus:ring-[#9B4444]`
+- **Border**: `border-gray-300`
+- **Shape**: `rounded`
+
+#### Buttons
+- **Primary Button**:
+  ```
+  bg-[#9B4444] text-white py-3 px-6 rounded-lg font-semibold
+  hover:bg-[#7d3636]
+  disabled:bg-gray-400 disabled:cursor-not-allowed
+  transition-colors
+  ```
+
+### Spacing & Layout
+
+#### Grid Layouts
+- **Two-column responsive**:
+  ```
+  grid grid-cols-1 md:grid-cols-2 gap-4
+  ```
+- **Usage**: Name fields, phone number fields
+
+#### Form Spacing
+- **Between fields**: `space-y-4` on form container
+- **Label margin**: `mb-1` below labels
+- **Section padding**: `p-4` for special sections (e.g., privacy policy box)
+
+### Special Components
+
+#### Privacy Policy Section
+- **Background**: `bg-gray-50` (subtle gray box)
+- **Layout**: `flex items-start gap-3`
+- **Padding**: `p-4`
+- **Border Radius**: `rounded-lg`
+- **Checkbox position**: `mt-1` for alignment with text
+
+#### Error Messages
+- **Background**: `bg-red-50`
+- **Border**: `border border-red-200`
+- **Text**: `text-red-700`
+- **Border Radius**: `rounded-lg`
+- **Padding**: `p-4`
+
+### Design Principles
+
+1. **Clean & Professional**: Minimal decoration, focus on functionality
+2. **Consistent Brand Color**: Use `#9B4444` for all interactive elements
+3. **Clear Hierarchy**: Use text sizes and weights to establish importance
+4. **Accessible**: Proper labels, required field indicators, error states
+5. **Responsive**: Mobile-first with `md:` breakpoints for desktop
+6. **User-Friendly**: Gray placeholders that turn black when selected/filled
+
+### Page-Specific Guidelines
+
+#### Landing Page (MapuaLandingPage)
+- **Navigation Bar**:
+  - Sticky positioning (`sticky top-0 z-50`)
+  - White background with shadow
+  - Mapua University logo on left (200x60px, auto height)
+  - Two action buttons on right: "GET HELP" (outlined) and "APPLY NOW" (filled brand red)
+  - Both buttons scroll to inquiry form section
+- **Hero Banner**:
+  - Gradient background: `from-[#C47B7B] to-[#B86B6B]`
+  - Single centered CTA: "FIND YOUR PROGRAM" with gold background (`#F4B942`)
+  - Scrolls to form on click
+- **About Section**:
+  - White background, 16px vertical padding
+  - Two-column responsive grid (lg:grid-cols-2)
+  - Left column: Heading (4xl/5xl), two body paragraphs, two CTA buttons
+  - Right column: Hero image (img-mapua-sec-1.webp) with 500px height
+  - "INQUIRE NOW" (filled red) and "ABOUT US" (outlined) buttons
+- **Form Section**:
+  - Light gray background (`bg-gray-100`)
+  - Contains InquiryForm component
+  - ID: `inquiry-form-section` for smooth scrolling
+
+#### Inquiry Form Component
+- "REQUEST INFORMATION" header with "REQUEST" in black, "INFORMATION" in brand red
+- White card with shadow (`bg-white shadow-lg rounded-lg p-8`)
+- Form centered with `max-w-2xl mx-auto`
+- Required field order maintained as specified in design docs
+
+---
+
 ## Directory Structure
 
 ```

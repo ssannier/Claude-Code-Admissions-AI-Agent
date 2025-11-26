@@ -16,6 +16,10 @@ Always use context7 when I need code generation, setup or configuration steps, o
 
 Write local unit test suites (using mock AWS data when necessary) in order to ensure that the logic of each section of the project is correct before moving on to deploying in AWS.
 
+## Use Prompt Kit bulding blocks
+
+Whenever possible, use Prompt Kit templates (https://www.prompt-kit.com/) when building frontend assets.
+
 ## Document as necessary
 
 Make and edit relevant documentation (including CLAUDE.md files) as you go, to ensure that you can keep track of your work as you go.
