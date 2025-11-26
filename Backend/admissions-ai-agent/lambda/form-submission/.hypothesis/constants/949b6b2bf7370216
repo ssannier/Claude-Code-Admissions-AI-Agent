@@ -1,0 +1,4 @@
+# file: C:\Users\seans\AppData\Roaming\Python\Python314\site-packages\isodate\isostrf.py
+# hypothesis_version: 6.148.2
+
+[100, 1000000, '%', '%%', '%%0%dd', '%02d', '%03d', '%06d', '%1d', '%C', '%H', '%H%M', '%H%M%S', '%H:%M', '%H:%M:%S', '%M', '%P', '%S', '%W', '%Y', '%Y%j', '%Y%m', '%Y%m%d', '%Y-%j', '%Y-%m', '%Y-%m-%d', '%Y-W%W', '%Y-W%W-%w', '%YW%W', '%YW%W%w', '%Z', '%d', '%d.%06d', '%f', '%h', '%j', '%m', '%p', '%sD', '%sH', '%sM', '%sY', '%w', '%z', '+', '0', '0D', 'P', 'P%P', 'P%p', 'S', 'T', 'W']

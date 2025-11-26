@@ -1,0 +1,4 @@
+# file: C:\Users\seans\AppData\Roaming\Python\Python314\site-packages\zeep\wsdl\wsdl.py
+# hypothesis_version: 6.148.2
+
+['%s%s', '%s: %s', '<%s(location=%r)>', '<WSDL(location=%r)>', 'Adding binding: %s', 'Adding message: %s', 'Adding port: %s', 'Adding service: %s', 'Bindings:', 'Definition', 'Global elements:', 'Global types:', 'Ignoring binding: %s', 'Operations:', 'Prefixes:', 'Transport', 'binding_classes', 'location', 'name', 'namespace', 'schema', 'targetNamespace', 'wsdl', 'wsdl:binding', 'wsdl:import', 'wsdl:message', 'wsdl:portType', 'wsdl:service', 'xsd']

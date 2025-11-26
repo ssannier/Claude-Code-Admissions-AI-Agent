@@ -1,0 +1,4 @@
+# file: C:\Users\seans\AppData\Roaming\Python\Python314\site-packages\zeep\wsdl\utils.py
+# hypothesis_version: 6.148.2
+
+['80', ':', 'http', 'https', 'utf-8', '{%s}Header']

@@ -1,0 +1,4 @@
+# file: C:\Users\seans\AppData\Roaming\Python\Python314\site-packages\simple_salesforce\bulk.py
+# hypothesis_version: 6.148.2
+
+[10000, 10000000, '.', '1', 'Closed', 'Completed', 'Content-Type', 'Failed', 'GET', 'JSON', 'NotProcessed', 'POST', 'SFBulkType', 'X-PrettyPrint', 'X-SFDC-Session', 'application/json', 'auto', 'batch_results', 'bypass_results', 'concurrencyMode', 'contentType', 'delete', 'externalIdFieldName', 'hardDelete', 'id', 'insert', 'jobId', 'job_id', 'object', 'operation', 'query', 'queryAll', 'state', 'stateMessage', 'update', 'upsert']

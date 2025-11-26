@@ -1,0 +1,4 @@
+# file: C:\Users\seans\AppData\Roaming\Python\Python314\site-packages\simple_salesforce\api.py
+# hypothesis_version: 6.148.2
+
+[200, 204, 300, 401, 443, '1', '59.0', 'Authorization', 'Bearer ', 'Body', 'Content-Type', 'DELETE', 'GET', 'INVALID_SESSION_ID', 'IsSandbox', 'NewPassword', 'PATCH', 'POST', 'SFType', 'Sforce-Limit-Info', 'User', 'X-PrettyPrint', '__', 'apexecute', 'api-usage', 'application/json', 'asyncId', 'bulk', 'bulk2', 'client-credentials', 'deployment_detail', 'describe', 'direct', 'done', 'errorCode', 'headers', 'ipfilter', 'json', 'jwt-bearer', 'limits/', 'login', 'nextRecordsUrl', 'password', 'per-app-api-usage', 'q', 'query', 'query/', 'queryAll', 'queryAll/', 'query_more', 'records', 'search', 'search/', 'sobjects', 'state', 'state_detail', 'toolingexecute', 'totalSize', 'unit_test_detail']

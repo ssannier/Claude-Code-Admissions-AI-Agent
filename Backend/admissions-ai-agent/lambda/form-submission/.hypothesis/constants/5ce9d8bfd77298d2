@@ -1,0 +1,4 @@
+# file: C:\Users\seans\AppData\Roaming\Python\Python314\site-packages\zeep\xsd\types\any.py
+# hypothesis_version: 6.148.2
+
+['AnyType', 'ComplexType', 'Schema', 'Type', 'anyType', 'nil', 'true', 'type', 'xsd:anyType']

@@ -1,0 +1,8 @@
+# Dependencies provided by Lambda layer
+# simple-salesforce==1.12.4
+# requests==2.31.0
+
+# Development/testing dependencies (not deployed)
+pytest==8.0.0
+pytest-mock==3.12.0
+hypothesis==6.92.0

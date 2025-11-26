@@ -1,0 +1,4 @@
+# file: C:\Users\seans\AppData\Roaming\Python\Python314\site-packages\simple_salesforce\login.py
+# hypothesis_version: 6.148.2
+
+[200, '-api', '/', 'Authorization', 'INVALID AUTH', 'RS256', 'SOAPAction', 'UTF-8', 'access_token', 'assertion', 'aud', 'charset', 'client_credentials', 'client_id', 'client_secret', 'content-type', 'error', 'error_description', 'exp', 'grant_type', 'http://', 'https://', 'instance_url', 'iss', 'login', 'password', 'serverUrl', 'sessionId', 'sf:exceptionCode', 'sf:exceptionMessage', 'simple-salesforce', 'sub', 'test', 'text/xml', 'username', 'v']

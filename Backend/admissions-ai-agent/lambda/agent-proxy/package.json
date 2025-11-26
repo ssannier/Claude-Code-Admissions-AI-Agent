@@ -1,0 +1,19 @@
+{
+  "name": "agent-proxy",
+  "version": "1.0.0",
+  "description": "Lambda proxy for streaming Bedrock Agent responses via SSE",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "dependencies": {
+    "@aws-sdk/client-bedrock-agent-runtime": "^3.470.0"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "@jest/globals": "^29.7.0"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}

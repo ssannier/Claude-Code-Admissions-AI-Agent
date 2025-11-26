@@ -1,0 +1,4 @@
+# file: C:\Users\seans\AppData\Roaming\Python\Python314\site-packages\isodate\isotzinfo.py
+# hypothesis_version: 6.148.2
+
+['%Z', '%h', '%s%02d', '%s%02d%02d', '%s%02d:%02d', '%z', '+', '-', 'Z', 'tzhour', 'tzmin', 'tzname', 'tzsign']

@@ -1,0 +1,4 @@
+# file: C:\Users\seans\AppData\Roaming\Python\Python314\site-packages\jwt\jwks_client.py
+# hypothesis_version: 6.148.2
+
+[300, 'header', 'kid', 'sig', 'verify_signature']

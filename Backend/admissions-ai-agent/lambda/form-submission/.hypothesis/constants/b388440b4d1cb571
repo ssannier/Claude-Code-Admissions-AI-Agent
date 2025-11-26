@@ -1,0 +1,4 @@
+# file: C:\Users\seans\AppData\Roaming\Python\Python314\site-packages\zeep\transports.py
+# hypothesis_version: 6.148.2
+
+[300, '0.26.0', 'AsyncTransport', 'Content-Type', 'HTTP Post to %s:\n%s', 'No url given to load', 'Transport', 'User-Agent', 'file', 'file://', 'http', 'https', 'multipart/related', 'proxies', 'proxy', 'rb', 'text/xml', 'utf-8']

@@ -1,0 +1,4 @@
+# file: C:\Users\seans\AppData\Roaming\Python\Python314\site-packages\zeep\exceptions.py
+# hypothesis_version: 6.148.2
+
+['%s (%s)', '%s(%r)', '%s:%s', '.', 'content', 'filename', 'item_name', 'location', 'path', 'qname', 'sourceline']
