@@ -95,7 +95,7 @@ def retrieve_from_knowledge_base(
 
 
 @tool
-def search_admissions_knowledge(
+def retrieve_university_info(
     query: str,
     topic: str = "general"
 ) -> Dict[str, Any]:

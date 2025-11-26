@@ -121,11 +121,11 @@ def complete_advisor_handoff(
 
         logger.info(f"Found Lead {lead_id} for phone {phone_number}")
 
-        # Step 3: Update Lead status to "Working"
-        # Property 21: Lead status updated to "Working"
+        # Step 3: Update Lead status to "Working - Connected"
+        # Property 21: Lead status updated to "Working - Connected"
         from tools.salesforce_tool import update_lead_status
 
-        status_updated = update_lead_status(lead_id, status="Working")
+        status_updated = update_lead_status(lead_id, status="Working - Connected")
 
         if not status_updated:
             logger.warning(f"Failed to update Lead status for {lead_id}")

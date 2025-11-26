@@ -21,7 +21,7 @@ from strands.models import BedrockModel
 # Import custom tools
 from tools.salesforce_tool import query_salesforce_leads, create_salesforce_task
 from tools.whatsapp_tool import send_whatsapp_message
-from tools.knowledge_tool import search_admissions_knowledge
+from tools.knowledge_tool import retrieve_university_info
 from tools.advisor_handoff_tool import complete_advisor_handoff, set_context
 from tools.session_utils import (
     track_user_session,
@@ -41,7 +41,7 @@ def get_system_prompt() -> str:
 
     Defines the agent's role, capabilities, conversational phases, and guidelines.
     """
-    return """You are an AI admissions advisor for a university. Your role is to help prospective students understand the admissions process, answer questions about programs, and guide them toward enrollment while maintaining a warm, helpful tone.
+    return """You are Nemo, an AI admissions advisor for a university. Your role is to help prospective students understand the admissions process, answer questions about programs, and guide them toward enrollment while maintaining a warm, helpful tone.
 
 **Your Capabilities:**
 
@@ -121,7 +121,7 @@ def get_system_prompt() -> str:
    - Be concise but thorough
 
 7. **Tool Usage Best Practices**
-   - search_admissions_knowledge: For factual questions about requirements, programs, deadlines, policies
+   - retrieve_university_info: For factual questions about requirements, programs, deadlines, policies
    - query_salesforce_leads: When student asks about their application status
    - create_salesforce_task: For follow-up items that don't need immediate attention
    - send_whatsapp_message: For confirmations or reminders (use student's timing preference)
@@ -131,7 +131,7 @@ def get_system_prompt() -> str:
 
 User: "What are the admission requirements for undergraduate programs?"
 You: Let me search our admissions requirements for you.
-[Use search_admissions_knowledge tool with query: "undergraduate admission requirements"]
+[Use retrieve_university_info tool with query: "undergraduate admission requirements"]
 Based on our admissions documentation, undergraduate applicants need: [provide specific details from search results with sources]
 
 User: "I submitted my application last week. What's the status?"
@@ -217,9 +217,10 @@ async def strands_agent_bedrock(payload: Dict[str, Any]) -> Dict[str, Any]:
 
         # Create agent with tools
         agent = Agent(
+            name="Nemo",
             model=model,
             tools=[
-                search_admissions_knowledge,
+                retrieve_university_info,
                 query_salesforce_leads,
                 create_salesforce_task,
                 send_whatsapp_message,

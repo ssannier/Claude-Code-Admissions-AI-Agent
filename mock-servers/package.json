@@ -1,0 +1,26 @@
+{
+  "name": "admissions-agent-mock-servers",
+  "version": "1.0.0",
+  "description": "Mock API servers for local frontend testing",
+  "main": "index.js",
+  "scripts": {
+    "form": "node form-submission.js",
+    "agent": "node agent-proxy.js",
+    "all": "concurrently \"npm run form\" \"npm run agent\"",
+    "test": "echo \"Run: npm run all\" && exit 0"
+  },
+  "keywords": [
+    "mock",
+    "api",
+    "testing"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.18.2"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}

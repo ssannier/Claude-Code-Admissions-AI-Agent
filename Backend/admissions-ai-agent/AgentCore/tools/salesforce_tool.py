@@ -345,7 +345,7 @@ def create_task_with_full_history(
 
         task_data = {
             'WhoId': lead_id,
-            'Subject': f"Advisor Handoff: {student_name}",
+            'Subject': "AI Chat Summary - Advisor Handoff",
             'Description': full_description,
             'Priority': 'High',
             'Status': 'Not Started',
