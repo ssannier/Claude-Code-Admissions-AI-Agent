@@ -222,3 +222,144 @@ def create_salesforce_task(
             "status": "error",
             "content": [{"text": "I'm having trouble creating a follow-up task. Please email admissions@university.edu for assistance."}]
         }
+
+
+# Helper functions for advisor handoff workflow
+
+def search_lead_by_phone(phone_number: str) -> tuple[Optional[str], Optional[Dict[str, Any]]]:
+    """
+    Search for a Lead by phone number.
+
+    Property 20: Phone number used to search Salesforce for Lead
+
+    Args:
+        phone_number: Phone number to search for
+
+    Returns:
+        Tuple of (lead_id, lead_data) or (None, None) if not found
+    """
+    try:
+        from tools.session_utils import sanitize_phone_for_actor_id
+
+        sf = get_salesforce_client()
+
+        # Sanitize phone
+        sanitized_phone = sanitize_phone_for_actor_id(phone_number)
+        normalized = sanitized_phone.replace('+', '').replace('-', '').replace(' ', '')
+
+        # Search for Lead
+        query = f"""
+            SELECT Id, FirstName, LastName, Email, Phone, Status,
+                   Program_Type__c, Headquarters__c
+            FROM Lead
+            WHERE Phone LIKE '%{normalized}%'
+            ORDER BY LastModifiedDate DESC
+            LIMIT 1
+        """
+
+        results = sf.query(query)
+
+        if results['totalSize'] > 0:
+            record = results['records'][0]
+            lead_data = {
+                'id': record['Id'],
+                'first_name': record.get('FirstName', ''),
+                'last_name': record.get('LastName', ''),
+                'email': record.get('Email', ''),
+                'phone': record.get('Phone', ''),
+                'status': record.get('Status', ''),
+                'program_type': record.get('Program_Type__c', ''),
+                'headquarters': record.get('Headquarters__c', '')
+            }
+            return record['Id'], lead_data
+
+        return None, None
+
+    except Exception as e:
+        logger.error(f"Error searching Lead by phone: {str(e)}", exc_info=True)
+        return None, None
+
+
+def update_lead_status(lead_id: str, status: str = "Working") -> bool:
+    """
+    Update Lead status in Salesforce.
+
+    Property 21: Lead status updated to "Working"
+
+    Args:
+        lead_id: Salesforce Lead ID
+        status: New status (default: "Working")
+
+    Returns:
+        True if successful, False otherwise
+    """
+    try:
+        sf = get_salesforce_client()
+
+        result = sf.Lead.update(lead_id, {'Status': status})
+
+        if result == 204:  # Success response code
+            logger.info(f"Updated Lead {lead_id} status to {status}")
+            return True
+
+        return False
+
+    except Exception as e:
+        logger.error(f"Error updating Lead status: {str(e)}", exc_info=True)
+        return False
+
+
+def create_task_with_full_history(
+    lead_id: str,
+    student_name: str,
+    task_description: str,
+    conversation_history: str = ""
+) -> Optional[str]:
+    """
+    Create a Salesforce Task with full conversation history.
+
+    Properties 23-25: Task includes conversation transcript
+
+    Args:
+        lead_id: Salesforce Lead ID
+        student_name: Student's name
+        task_description: Brief description of the task
+        conversation_history: Full conversation transcript
+
+    Returns:
+        Task ID if successful, None otherwise
+    """
+    try:
+        sf = get_salesforce_client()
+
+        # Combine description with conversation history
+        full_description = f"{task_description}\n\n"
+
+        if conversation_history:
+            full_description += "--- Conversation Transcript ---\n"
+            full_description += conversation_history
+
+        # Truncate if too long (Salesforce Description field limit is 32KB)
+        if len(full_description) > 30000:
+            full_description = full_description[:30000] + "\n\n[Transcript truncated]"
+
+        task_data = {
+            'WhoId': lead_id,
+            'Subject': f"Advisor Handoff: {student_name}",
+            'Description': full_description,
+            'Priority': 'High',
+            'Status': 'Not Started',
+            'Type': 'Advisor Handoff'
+        }
+
+        result = sf.Task.create(task_data)
+
+        if result['success']:
+            logger.info(f"Created Task {result['id']} with full history for Lead {lead_id}")
+            return result['id']
+
+        return None
+
+    except Exception as e:
+        logger.error(f"Error creating Task with history: {str(e)}", exc_info=True)
+        return None

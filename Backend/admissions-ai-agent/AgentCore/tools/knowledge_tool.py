@@ -1,8 +1,8 @@
 """
 Knowledge Base Search Tool
 
-Searches admissions documentation in S3-based knowledge base.
-Property 10: Agent searches S3 knowledge base for admissions information
+Searches admissions documentation using Amazon Bedrock Knowledge Base with vector search.
+Properties 8-11: Knowledge Base retrieval with relevance scoring and source attribution
 """
 
 import os
@@ -15,71 +15,82 @@ from botocore.exceptions import ClientError
 logger = logging.getLogger(__name__)
 
 
-def get_s3_client():
-    """Get S3 client instance."""
-    return boto3.client('s3', region_name=os.getenv('AWS_REGION', 'us-east-1'))
+def get_bedrock_agent_runtime_client():
+    """Get Bedrock Agent Runtime client instance."""
+    return boto3.client(
+        'bedrock-agent-runtime',
+        region_name=os.getenv('AWS_REGION', 'us-east-1')
+    )
 
 
-def search_knowledge_base_s3(query: str, max_results: int = 3) -> List[Dict[str, str]]:
+def retrieve_from_knowledge_base(
+    query: str,
+    knowledge_base_id: str,
+    number_of_results: int = 5,
+    score_threshold: float = 0.5
+) -> List[Dict[str, Any]]:
     """
-    Search knowledge base files in S3 for relevant content.
+    Retrieve relevant documents from Bedrock Knowledge Base using vector search.
 
-    This is a simplified implementation that reads markdown files from S3.
-    In production, this would use Amazon Bedrock Knowledge Base with vector search.
+    Property 8: Factual questions trigger knowledge base search
+    Property 9: Results filtered by relevance score threshold (0.5)
 
     Args:
-        query: Search query
-        max_results: Maximum number of results
+        query: Search query text
+        knowledge_base_id: Bedrock Knowledge Base ID
+        number_of_results: Maximum results to return
+        score_threshold: Minimum relevance score (0.0-1.0)
 
     Returns:
-        List of relevant documents with content
+        List of relevant documents with content, scores, and metadata
     """
     try:
-        s3 = get_s3_client()
-        bucket_name = os.environ['KNOWLEDGE_BASE_BUCKET']
+        client = get_bedrock_agent_runtime_client()
 
-        # List all markdown files
-        response = s3.list_objects_v2(
-            Bucket=bucket_name,
-            Prefix='admissions/'
+        response = client.retrieve(
+            knowledgeBaseId=knowledge_base_id,
+            retrievalQuery={
+                'text': query
+            },
+            retrievalConfiguration={
+                'vectorSearchConfiguration': {
+                    'numberOfResults': number_of_results
+                }
+            }
         )
 
-        if 'Contents' not in response:
-            return []
-
         results = []
+        for result in response.get('retrievalResults', []):
+            score = result.get('score', 0.0)
 
-        # Simple keyword search (in production, use Bedrock KB with embeddings)
-        query_lower = query.lower()
+            # Property 9: Filter by relevance score >= 0.5
+            if score >= score_threshold:
+                content = result.get('content', {}).get('text', '')
+                location = result.get('location', {})
 
-        for obj in response.get('Contents', [])[:10]:  # Limit to first 10 files
-            if not obj['Key'].endswith(('.md', '.txt')):
-                continue
+                # Extract source information
+                s3_location = location.get('s3Location', {})
+                uri = s3_location.get('uri', '')
 
-            try:
-                # Get file content
-                file_obj = s3.get_object(Bucket=bucket_name, Key=obj['Key'])
-                content = file_obj['Body'].read().decode('utf-8')
+                # Parse document name and URL from S3 URI
+                doc_name = uri.split('/')[-1] if uri else 'Unknown Document'
 
-                # Check if query keywords are in content
-                if any(keyword in content.lower() for keyword in query_lower.split()):
-                    results.append({
-                        'file': obj['Key'],
-                        'content': content[:2000],  # First 2000 chars
-                        'size': obj['Size']
-                    })
-
-                    if len(results) >= max_results:
-                        break
-
-            except Exception as e:
-                logger.warning(f"Error reading {obj['Key']}: {str(e)}")
-                continue
+                results.append({
+                    'content': content,
+                    'score': score,
+                    'document_name': doc_name,
+                    'uri': uri,
+                    'metadata': result.get('metadata', {})
+                })
 
         return results
 
+    except ClientError as e:
+        logger.error(f"Bedrock Knowledge Base error: {str(e)}", exc_info=True)
+        return []
+
     except Exception as e:
-        logger.error(f"Error searching knowledge base: {str(e)}", exc_info=True)
+        logger.error(f"Error retrieving from knowledge base: {str(e)}", exc_info=True)
         return []
 
 
@@ -101,7 +112,11 @@ def search_admissions_knowledge(
     Always use this tool before answering specific questions about university
     policies, requirements, or procedures to ensure accuracy.
 
-    Property 10: Agent searches S3 knowledge base for admissions information
+    Properties Implemented:
+    - Property 8: Factual questions trigger knowledge base search
+    - Property 9: KB results filtered by relevance score >= 0.5
+    - Property 10: KB responses include source attribution (document names and URLs)
+    - Property 11: KB search displays tool indicator (via tool_use event)
 
     Args:
         query: Search query describing what information is needed
@@ -110,11 +125,28 @@ def search_admissions_knowledge(
                "campus", or "general" (default: "general")
 
     Returns:
-        Relevant information from the knowledge base with sources
+        Relevant information from the knowledge base with sources and relevance scores
     """
     try:
-        # Search knowledge base
-        results = search_knowledge_base_s3(query, max_results=3)
+        # Get Knowledge Base ID from environment
+        knowledge_base_id = os.environ.get('KNOWLEDGE_BASE_ID')
+
+        if not knowledge_base_id:
+            logger.warning("KNOWLEDGE_BASE_ID not configured, using fallback message")
+            return {
+                "status": "error",
+                "content": [{
+                    "text": "The knowledge base is not currently configured. Please visit admissions.university.edu or let me connect you with a human advisor."
+                }]
+            }
+
+        # Retrieve from Bedrock Knowledge Base
+        results = retrieve_from_knowledge_base(
+            query=query,
+            knowledge_base_id=knowledge_base_id,
+            number_of_results=5,
+            score_threshold=0.5  # Property 9: Minimum relevance score
+        )
 
         if not results:
             return {
@@ -124,25 +156,38 @@ def search_admissions_knowledge(
                 }]
             }
 
-        # Format results
+        # Format results with source attribution (Property 10)
         response_text = f"Based on our admissions documentation:\n\n"
 
         for i, result in enumerate(results, 1):
-            file_name = result['file'].split('/')[-1]
-            content_preview = result['content'][:500]  # First 500 chars
+            doc_name = result['document_name']
+            content = result['content'][:500]  # First 500 chars
+            score = result['score']
+            uri = result['uri']
 
-            response_text += f"**Source {i}: {file_name}**\n"
-            response_text += f"{content_preview}\n\n"
+            response_text += f"**Source {i}: {doc_name}** (Relevance: {score:.2f})\n"
+            response_text += f"{content}\n\n"
 
-            if len(content_preview) == 500:
+            if len(result['content']) > 500:
                 response_text += "...\n\n"
 
-        response_text += f"*Found {len(results)} relevant document(s). For complete details, please visit our admissions website or contact an advisor.*"
+            # Add URL if available
+            if uri:
+                response_text += f"_[View full document]({uri})_\n\n"
+
+        response_text += f"*Found {len(results)} relevant document(s) with relevance scores >= 0.5. For complete details, please visit our admissions website or contact an advisor.*"
 
         return {
             "status": "success",
             "content": [{"text": response_text}],
-            "sources": [r['file'] for r in results],
+            "sources": [
+                {
+                    "document_name": r['document_name'],
+                    "uri": r['uri'],
+                    "score": r['score']
+                }
+                for r in results
+            ],
             "result_count": len(results)
         }
 
