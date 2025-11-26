@@ -1,0 +1,262 @@
+# AI Admissions Agent - .gitignore
+
+# ========================================
+# Secrets & Environment Variables
+# ========================================
+.env
+.env.local
+.env.*.local
+.env.production
+.env.development
+*.pem
+*.key
+credentials.json
+config.json
+secrets/
+
+# AWS & Bedrock
+.agentcore/
+.aws/
+aws-exports.js
+
+# ========================================
+# Node.js
+# ========================================
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+.pnpm-debug.log*
+
+# Build outputs
+dist/
+build/
+out/
+.next/
+.nuxt/
+.cache/
+
+# Logs
+logs/
+*.log
+
+# ========================================
+# Python
+# ========================================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Virtual environments
+.venv
+.virtualenv
+*.virtualenv
+
+# Python testing
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.hypothesis/
+
+# ========================================
+# AWS CDK
+# ========================================
+cdk.out/
+cdk.context.json
+.cdk.staging/
+
+# ========================================
+# Lambda Layers (built artifacts)
+# ========================================
+Backend/admissions-ai-agent/lambda-layers/salesforce-layer/python/
+Backend/admissions-ai-agent/lambda-layers/twilio-layer/python/
+Backend/admissions-ai-agent/lambda-layers/*.zip
+
+# Lambda deployment packages
+*.zip
+lambda-package/
+
+# ========================================
+# Docker
+# ========================================
+docker-compose.override.yml
+Dockerfile.local
+.dockerignore
+
+# ========================================
+# Testing & Coverage
+# ========================================
+coverage/
+.nyc_output/
+test-results/
+junit.xml
+
+# ========================================
+# IDEs & Editors
+# ========================================
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# JetBrains
+.idea/
+*.iml
+*.iws
+*.ipr
+
+# Visual Studio Code
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+
+# ========================================
+# OS Files
+# ========================================
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# ========================================
+# Temporary Files
+# ========================================
+*.tmp
+*.temp
+*.bak
+*.swp
+*.swo
+*~
+tmp/
+temp/
+
+# ========================================
+# Build & Deployment Artifacts
+# ========================================
+*.tar.gz
+*.tgz
+*.rar
+*.zip
+*.7z
+
+# CloudFormation templates (generated)
+*.template.json
+*.template.yaml
+
+# ========================================
+# Amplify
+# ========================================
+amplify/
+#amplify-do-not-edit-begin
+amplify/\#current-cloud-backend
+amplify/.config/local-*
+amplify/logs
+amplify/mock-data
+amplify/mock-api-resources
+amplify/backend/amplify-meta.json
+amplify/backend/.temp
+#amplify-do-not-edit-end
+aws-exports.js
+
+# ========================================
+# Frontend Specific
+# ========================================
+# Next.js
+.next/
+out/
+next-env.d.ts
+.vercel
+
+# React
+.react/
+
+# TypeScript
+*.tsbuildinfo
+
+# ========================================
+# Database & Data Files
+# ========================================
+*.db
+*.sqlite
+*.sqlite3
+*.sql
+
+# ========================================
+# Logs & Debug
+# ========================================
+debug.log
+error.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ========================================
+# Package Manager Locks (optional - uncomment if you want to ignore)
+# ========================================
+# package-lock.json
+# yarn.lock
+# pnpm-lock.yaml
+
+# ========================================
+# Salesforce
+# ========================================
+.sfdx/
+.sf/
+
+# ========================================
+# Documentation Build Artifacts
+# ========================================
+docs/_build/
+docs/.doctrees/
+
+# ========================================
+# Jupyter Notebooks
+# ========================================
+.ipynb_checkpoints/
+*.ipynb
+
+# ========================================
+# Project Specific
+# ========================================
+# Mock server logs
+mock-servers/logs/
+
+# Test outputs
+response.json
+output.json
+test-output/
+
+# Deployment artifacts
+deployment-*.zip
+amplify-deployment-*.zip
+
+# Load testing
+artillery-report-*.json
+load-test-results/
+
+# ========================================
+# Keep These Files (Force Include)
+# ========================================
+# Uncomment to force-include specific files if needed
+# !.env.example
+# !.vscode/extensions.json
+# !.gitkeep
