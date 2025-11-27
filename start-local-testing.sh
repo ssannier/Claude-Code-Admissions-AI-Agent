@@ -132,11 +132,17 @@ elif [[ "$OSTYPE" == "msys" ]] || [[ "$OSTYPE" == "cygwin" ]]; then
     # Windows Git Bash
     echo -e "${BLUE}Opening terminals on Windows...${NC}"
 
-    start "Form API" cmd /k "cd mock-servers && node form-submission.js"
+    # Get the absolute path and convert to Windows format
+    SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    WIN_PATH=$(cygpath -w "$SCRIPT_DIR")
+
+    # Open terminals with proper quoting for paths with spaces
+    # Start terminals in the script directory, then cd to subdirectories
+    cmd //c start "Form API" //D "$WIN_PATH" cmd //k "cd mock-servers && node form-submission.js"
     sleep 1
-    start "Agent Proxy" cmd /k "cd mock-servers && node agent-proxy.js"
+    cmd //c start "Agent Proxy" //D "$WIN_PATH" cmd //k "cd mock-servers && node agent-proxy.js"
     sleep 1
-    start "Frontend" cmd /k "cd Frontend\admissions-chat && npm run dev"
+    cmd //c start "Frontend Dev" //D "$WIN_PATH" cmd //k "cd Frontend\\admissions-chat && npm run dev"
 
 else
     echo -e "${YELLOW}Unknown OS. Please manually run these commands:${NC}"
