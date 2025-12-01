@@ -10,10 +10,60 @@ import os
 import logging
 from datetime import datetime
 from typing import Dict, Any, List
+import boto3
+from botocore.exceptions import ClientError
 
 # Configure logging
 logger = logging.getLogger()
 logger.setLevel(os.getenv('LOG_LEVEL', 'INFO'))
+
+# Cache for secrets to avoid repeated API calls
+_secrets_cache = {}
+
+
+def get_secret(secret_name: str) -> Dict[str, str]:
+    """
+    Retrieve secret from AWS Secrets Manager with caching.
+
+    Args:
+        secret_name: Name of the secret in Secrets Manager
+
+    Returns:
+        Dictionary with secret values
+
+    Raises:
+        Exception: If secret cannot be retrieved
+    """
+    # Return from cache if available
+    if secret_name in _secrets_cache:
+        return _secrets_cache[secret_name]
+
+    try:
+        session = boto3.session.Session()
+        client = session.client(
+            service_name='secretsmanager',
+            region_name=os.getenv('AWS_REGION', 'us-west-2')
+        )
+
+        response = client.get_secret_value(SecretId=secret_name)
+        secret_string = response['SecretString']
+        secret_dict = json.loads(secret_string)
+
+        # Cache the secret
+        _secrets_cache[secret_name] = secret_dict
+
+        logger.info(f"Successfully retrieved secret: {secret_name}")
+        return secret_dict
+
+    except ClientError as e:
+        logger.error(f"Failed to retrieve secret {secret_name}: {str(e)}")
+        raise Exception(f"Unable to retrieve Twilio credentials from Secrets Manager")
+    except json.JSONDecodeError as e:
+        logger.error(f"Invalid JSON in secret {secret_name}: {str(e)}")
+        raise Exception(f"Invalid secret format")
+    except Exception as e:
+        logger.error(f"Unexpected error retrieving secret: {str(e)}")
+        raise
 
 
 def send_whatsapp_message(
@@ -212,15 +262,19 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     """
     logger.info(f"Processing {len(event['Records'])} SQS messages")
 
-    # Initialize Twilio client
+    # Initialize Twilio client with credentials from Secrets Manager
     try:
         from twilio.rest import Client
 
+        # Get Twilio credentials from Secrets Manager
+        secret_name = os.getenv('TWILIO_SECRET_NAME', 'admissions-agent/twilio')
+        credentials = get_secret(secret_name)
+
         twilio_client = Client(
-            os.environ['TWILIO_ACCOUNT_SID'],
-            os.environ['TWILIO_AUTH_TOKEN']
+            credentials['account_sid'],
+            credentials['auth_token']
         )
-        twilio_phone = os.environ['TWILIO_PHONE_NUMBER']
+        twilio_phone = credentials['phone_number']
 
     except Exception as e:
         logger.error(f"Failed to initialize Twilio client: {str(e)}", exc_info=True)

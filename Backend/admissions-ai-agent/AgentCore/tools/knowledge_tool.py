@@ -19,7 +19,7 @@ def get_bedrock_agent_runtime_client():
     """Get Bedrock Agent Runtime client instance."""
     return boto3.client(
         'bedrock-agent-runtime',
-        region_name=os.getenv('AWS_REGION', 'us-east-1')
+        region_name=os.getenv('AWS_REGION', 'us-west-2')
     )
 
 

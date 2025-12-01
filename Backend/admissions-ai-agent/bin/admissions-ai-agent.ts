@@ -8,7 +8,7 @@ const app = new cdk.App();
 new AdmissionsAgentStack(app, 'AdmissionsAgentStack', {
   env: {
     account: process.env.CDK_DEFAULT_ACCOUNT,
-    region: process.env.CDK_DEFAULT_REGION || 'us-east-1',
+    region: process.env.CDK_DEFAULT_REGION || 'us-west-2',
   },
   description: 'AI-powered university admissions agent infrastructure',
   tags: {

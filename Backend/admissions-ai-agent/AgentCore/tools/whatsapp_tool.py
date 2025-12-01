@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 
 def get_sqs_client():
     """Get SQS client instance."""
-    return boto3.client('sqs', region_name=os.getenv('AWS_REGION', 'us-east-1'))
+    return boto3.client('sqs', region_name=os.getenv('AWS_REGION', 'us-west-2'))
 
 
 def calculate_delay_seconds(timing_preference: str) -> int:

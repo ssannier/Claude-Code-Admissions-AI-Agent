@@ -9,10 +9,60 @@ import json
 import os
 import logging
 from typing import Dict, Any, Optional
+import boto3
+from botocore.exceptions import ClientError
 
 # Configure logging
 logger = logging.getLogger()
 logger.setLevel(os.getenv('LOG_LEVEL', 'INFO'))
+
+# Cache for secrets to avoid repeated API calls
+_secrets_cache = {}
+
+
+def get_secret(secret_name: str) -> Dict[str, str]:
+    """
+    Retrieve secret from AWS Secrets Manager with caching.
+
+    Args:
+        secret_name: Name of the secret in Secrets Manager
+
+    Returns:
+        Dictionary with secret values
+
+    Raises:
+        Exception: If secret cannot be retrieved
+    """
+    # Return from cache if available
+    if secret_name in _secrets_cache:
+        return _secrets_cache[secret_name]
+
+    try:
+        session = boto3.session.Session()
+        client = session.client(
+            service_name='secretsmanager',
+            region_name=os.getenv('AWS_REGION', 'us-west-2')
+        )
+
+        response = client.get_secret_value(SecretId=secret_name)
+        secret_string = response['SecretString']
+        secret_dict = json.loads(secret_string)
+
+        # Cache the secret
+        _secrets_cache[secret_name] = secret_dict
+
+        logger.info(f"Successfully retrieved secret: {secret_name}")
+        return secret_dict
+
+    except ClientError as e:
+        logger.error(f"Failed to retrieve secret {secret_name}: {str(e)}")
+        raise Exception(f"Unable to retrieve credentials from Secrets Manager")
+    except json.JSONDecodeError as e:
+        logger.error(f"Invalid JSON in secret {secret_name}: {str(e)}")
+        raise Exception(f"Invalid secret format")
+    except Exception as e:
+        logger.error(f"Unexpected error retrieving secret: {str(e)}")
+        raise
 
 
 def validate_form_data(body: Dict[str, Any]) -> tuple[bool, Optional[str]]:
@@ -64,11 +114,15 @@ def create_salesforce_lead(form_data: Dict[str, Any]) -> Dict[str, Any]:
     try:
         from simple_salesforce import Salesforce
 
+        # Get Salesforce credentials from Secrets Manager
+        secret_name = os.getenv('SALESFORCE_SECRET_NAME', 'admissions-agent/salesforce')
+        credentials = get_secret(secret_name)
+
         # Connect to Salesforce
         sf = Salesforce(
-            username=os.environ['SF_USERNAME'],
-            password=os.environ['SF_PASSWORD'],
-            security_token=os.environ['SF_TOKEN']
+            username=credentials['username'],
+            password=credentials['password'],
+            security_token=credentials['token']
         )
 
         # Prepare Lead data

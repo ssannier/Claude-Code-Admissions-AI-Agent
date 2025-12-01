@@ -17,13 +17,30 @@ export class AdmissionsAgentStack extends cdk.Stack {
 
     // ==================== S3 Bucket for Knowledge Base ====================
     const knowledgeBaseBucket = new s3.Bucket(this, 'KnowledgeBaseBucket', {
-      bucketName: `admissions-agent-kb-${this.account}`,
+      bucketName: `admissions-agent-kb-${this.account}-${this.region}`,
       versioned: true,
       encryption: s3.BucketEncryption.S3_MANAGED,
+      removalPolicy: cdk.RemovalPolicy.RETAIN, // Retain bucket on stack deletion to preserve knowledge base documents
+      autoDeleteObjects: false, // Don't auto-delete objects to prevent accidental data loss
       blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
-      removalPolicy: cdk.RemovalPolicy.RETAIN, // Keep documents on stack deletion
-      autoDeleteObjects: false,
+      lifecycleRules: [
+        {
+          noncurrentVersionExpiration: cdk.Duration.days(30),
+        },
+      ],
     });
+
+    // ==================== Bedrock Knowledge Base ====================
+    // NOTE: Knowledge Base will be created via Bedrock Console
+    // This approach avoids complex permission issues between CDK, Bedrock, and OpenSearch
+    // See KNOWLEDGE_BASE_INSTRUCTIONS.md for step-by-step Console creation guide
+    //
+    // Configuration to use:
+    // - Name: AdmissionsKnowledgeBase
+    // - S3 Bucket: admissions-agent-kb-756493389182-us-west-2
+    // - OpenSearch Collection: admissions-kb-collection (to be created)
+    // - Index: admissions-kb-index
+    // - Embeddings: Titan Embeddings G1 - Text
 
     // ==================== DynamoDB Tables ====================
 
@@ -35,8 +52,10 @@ export class AdmissionsAgentStack extends cdk.Stack {
         type: dynamodb.AttributeType.STRING,
       },
       billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
-      removalPolicy: cdk.RemovalPolicy.RETAIN, // Keep session data
-      pointInTimeRecovery: true,
+      removalPolicy: cdk.RemovalPolicy.DESTROY, // Can recreate - data is ephemeral during development
+      pointInTimeRecoverySpecification: {
+        pointInTimeRecoveryEnabled: true,
+      },
     });
 
     // WhatsAppMessageTracking table for delivery status
@@ -47,8 +66,10 @@ export class AdmissionsAgentStack extends cdk.Stack {
         type: dynamodb.AttributeType.STRING,
       },
       billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
-      removalPolicy: cdk.RemovalPolicy.RETAIN,
-      pointInTimeRecovery: true,
+      removalPolicy: cdk.RemovalPolicy.DESTROY, // Can recreate - data is ephemeral during development
+      pointInTimeRecoverySpecification: {
+        pointInTimeRecoveryEnabled: true,
+      },
     });
 
     // ==================== SQS Queue for WhatsApp Messages ====================
@@ -122,7 +143,8 @@ export class AdmissionsAgentStack extends cdk.Stack {
 
     const agentEcrRepo = new ecr.Repository(this, 'AgentEcrRepo', {
       repositoryName: 'admissions-agent',
-      removalPolicy: cdk.RemovalPolicy.RETAIN,
+      removalPolicy: cdk.RemovalPolicy.DESTROY, // Can recreate - images can be rebuilt
+      emptyOnDelete: true, // Automatically delete images on stack deletion
       lifecycleRules: [{
         maxImageCount: 5,
         description: 'Keep last 5 images',
@@ -132,6 +154,12 @@ export class AdmissionsAgentStack extends cdk.Stack {
     // ==================== Lambda Functions ====================
 
     // Form Submission Lambda
+    const formSubmissionLogGroup = new logs.LogGroup(this, 'FormSubmissionLogGroup', {
+      logGroupName: '/aws/lambda/admissions-form-submission',
+      retention: logs.RetentionDays.ONE_WEEK,
+      removalPolicy: cdk.RemovalPolicy.DESTROY,
+    });
+
     const formSubmissionLambda = new lambda.Function(this, 'FormSubmissionLambda', {
       functionName: 'admissions-form-submission',
       runtime: lambda.Runtime.PYTHON_3_12,
@@ -141,15 +169,26 @@ export class AdmissionsAgentStack extends cdk.Stack {
       memorySize: 256,
       layers: [salesforceLayer],
       environment: {
-        SF_USERNAME: process.env.SF_USERNAME || '',
-        SF_PASSWORD: process.env.SF_PASSWORD || '',
-        SF_TOKEN: process.env.SF_TOKEN || '',
+        SALESFORCE_SECRET_NAME: 'admissions-agent/salesforce',
         LOG_LEVEL: 'INFO',
       },
-      logRetention: logs.RetentionDays.ONE_WEEK,
+      logGroup: formSubmissionLogGroup,
     });
 
+    // Grant Secrets Manager read permissions
+    formSubmissionLambda.addToRolePolicy(new iam.PolicyStatement({
+      effect: iam.Effect.ALLOW,
+      actions: ['secretsmanager:GetSecretValue'],
+      resources: [`arn:aws:secretsmanager:${this.region}:${this.account}:secret:admissions-agent/salesforce-*`],
+    }));
+
     // WhatsApp Sender Lambda
+    const whatsappSenderLogGroup = new logs.LogGroup(this, 'WhatsAppSenderLogGroup', {
+      logGroupName: '/aws/lambda/admissions-whatsapp-sender',
+      retention: logs.RetentionDays.ONE_WEEK,
+      removalPolicy: cdk.RemovalPolicy.DESTROY,
+    });
+
     const whatsappSenderLambda = new lambda.Function(this, 'WhatsAppSenderLambda', {
       functionName: 'admissions-whatsapp-sender',
       runtime: lambda.Runtime.PYTHON_3_12,
@@ -159,17 +198,23 @@ export class AdmissionsAgentStack extends cdk.Stack {
       memorySize: 256,
       layers: [twilioLayer],
       environment: {
-        TWILIO_ACCOUNT_SID: process.env.TWILIO_ACCOUNT_SID || '',
-        TWILIO_AUTH_TOKEN: process.env.TWILIO_AUTH_TOKEN || '',
-        TWILIO_PHONE_NUMBER: process.env.TWILIO_PHONE_NUMBER || '',
+        TWILIO_SECRET_NAME: 'admissions-agent/twilio',
         MESSAGE_TRACKING_TABLE: messageTrackingTable.tableName,
+        AWS_REGION: this.region,
         LOG_LEVEL: 'INFO',
       },
-      logRetention: logs.RetentionDays.ONE_WEEK,
+      logGroup: whatsappSenderLogGroup,
     });
 
     // Grant DynamoDB write access to WhatsApp Lambda
     messageTrackingTable.grantWriteData(whatsappSenderLambda);
+
+    // Grant Secrets Manager read permissions
+    whatsappSenderLambda.addToRolePolicy(new iam.PolicyStatement({
+      effect: iam.Effect.ALLOW,
+      actions: ['secretsmanager:GetSecretValue'],
+      resources: [`arn:aws:secretsmanager:${this.region}:${this.account}:secret:admissions-agent/twilio-*`],
+    }));
 
     // Add SQS as event source for WhatsApp Lambda
     whatsappSenderLambda.addEventSource(new SqsEventSource(whatsappQueue, {
@@ -178,6 +223,12 @@ export class AdmissionsAgentStack extends cdk.Stack {
     }));
 
     // Agent Proxy Lambda (placeholder - will be implemented)
+    const agentProxyLogGroup = new logs.LogGroup(this, 'AgentProxyLogGroup', {
+      logGroupName: '/aws/lambda/admissions-agent-proxy',
+      retention: logs.RetentionDays.ONE_WEEK,
+      removalPolicy: cdk.RemovalPolicy.DESTROY,
+    });
+
     const agentProxyLambda = new lambda.Function(this, 'AgentProxyLambda', {
       functionName: 'admissions-agent-proxy',
       runtime: lambda.Runtime.NODEJS_20_X,
@@ -187,10 +238,9 @@ export class AdmissionsAgentStack extends cdk.Stack {
       memorySize: 512,
       environment: {
         AGENT_RUNTIME_ARN: process.env.AGENT_RUNTIME_ARN || 'placeholder',
-        AWS_REGION: this.region,
         LOG_LEVEL: 'INFO',
       },
-      logRetention: logs.RetentionDays.ONE_WEEK,
+      logGroup: agentProxyLogGroup,
     });
 
     // Grant agent proxy permission to invoke Bedrock AgentCore
@@ -285,5 +335,9 @@ export class AdmissionsAgentStack extends cdk.Stack {
       description: 'API Gateway URL for form submission',
       exportName: 'FormSubmissionApiUrl',
     });
+
+    // NOTE: Knowledge Base ID, Data Source ID, and Role will be available after
+    // creating the Knowledge Base via Bedrock Console. Update QUICK_REFERENCE.md
+    // with these values after creation.
   }
 }
